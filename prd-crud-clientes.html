@@ -1,0 +1,1261 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PRD - CRUD de Clientes con Vue.js y Nuxt UI</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #5b6475;
+      --line: #dfe5ef;
+      --primary: #0f766e;
+      --primary-soft: #d9f6f1;
+      --accent: #2563eb;
+      --warning: #b45309;
+      --danger: #b91c1c;
+      --success: #15803d;
+      --code-bg: #0f172a;
+      --code-ink: #e2e8f0;
+      --shadow: 0 22px 70px rgba(15, 23, 42, 0.10);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 32rem),
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 28rem),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.62;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 28px;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    .sidebar h2 {
+      margin: 0 0 14px;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .sidebar nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .sidebar a {
+      display: block;
+      border-radius: 12px;
+      padding: 8px 10px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .sidebar a:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .document {
+      min-width: 0;
+    }
+
+    .hero,
+    section {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      padding: 34px;
+    }
+
+    .hero {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      top: -100px;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.25), rgba(37, 99, 235, 0.20));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      line-height: 1.18;
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 820px;
+      font-size: clamp(36px, 6vw, 64px);
+      letter-spacing: -0.05em;
+    }
+
+    h2 {
+      margin-bottom: 18px;
+      font-size: clamp(26px, 3vw, 36px);
+      letter-spacing: -0.035em;
+    }
+
+    h3 {
+      margin: 26px 0 10px;
+      font-size: 21px;
+      letter-spacing: -0.02em;
+    }
+
+    h4 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+
+    .lead {
+      max-width: 900px;
+      margin-top: 18px;
+      font-size: 19px;
+      color: #354052;
+    }
+
+    .meta-grid,
+    .cards,
+    .two-col,
+    .three-col {
+      display: grid;
+      gap: 16px;
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+
+    .two-col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .three-col {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #ffffff;
+      padding: 18px;
+    }
+
+    .card strong,
+    .meta strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+
+    .meta {
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 16px;
+      background: rgba(217, 246, 241, 0.55);
+      padding: 14px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 16px 22px;
+      padding: 0;
+      color: var(--muted);
+    }
+
+    li {
+      margin: 7px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #ffffff;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      border-radius: 6px;
+      background: #eef2f7;
+      color: #1e293b;
+      padding: 2px 6px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+
+    pre {
+      overflow-x: auto;
+      border-radius: 18px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      padding: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .note,
+    .warning,
+    .success {
+      border-radius: 18px;
+      margin: 18px 0;
+      padding: 16px 18px;
+    }
+
+    .note {
+      border: 1px solid rgba(37, 99, 235, 0.24);
+      background: rgba(219, 234, 254, 0.70);
+    }
+
+    .warning {
+      border: 1px solid rgba(180, 83, 9, 0.24);
+      background: rgba(254, 243, 199, 0.70);
+    }
+
+    .success {
+      border: 1px solid rgba(21, 128, 61, 0.24);
+      background: rgba(220, 252, 231, 0.70);
+    }
+
+    .note strong,
+    .warning strong,
+    .success strong {
+      color: var(--ink);
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      counter-reset: flow;
+    }
+
+    .flow-step {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #ffffff;
+      padding: 16px 16px 16px 54px;
+    }
+
+    .flow-step::before {
+      counter-increment: flow;
+      content: counter(flow);
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .badge.must {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .badge.should {
+      background: #fef3c7;
+      color: var(--warning);
+    }
+
+    .badge.could {
+      background: #dbeafe;
+      color: var(--accent);
+    }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 16px 0 30px;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .page {
+        display: block;
+        max-width: none;
+        padding: 0;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .hero,
+      section {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .page {
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .meta-grid,
+      .two-col,
+      .three-col {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <aside class="sidebar" aria-label="Indice del documento">
+      <h2>Indice</h2>
+      <nav>
+        <a href="#resumen">1. Resumen</a>
+        <a href="#contexto">2. Contexto</a>
+        <a href="#objetivos">3. Objetivos</a>
+        <a href="#alcance">4. Alcance</a>
+        <a href="#usuarios">5. Usuarios</a>
+        <a href="#modelo">6. Modelo de datos</a>
+        <a href="#funcionalidades">7. Funcionalidades</a>
+        <a href="#arquitectura">8. Arquitectura</a>
+        <a href="#flujos">9. Flujos CRUD</a>
+        <a href="#validaciones">10. Validaciones</a>
+        <a href="#ui">11. Interfaz</a>
+        <a href="#requerimientos">12. Requerimientos</a>
+        <a href="#aceptacion">13. Criterios</a>
+        <a href="#clase">14. Material de clase</a>
+        <a href="#evaluacion">15. Evaluacion</a>
+      </nav>
+    </aside>
+
+    <div class="document">
+      <header class="hero" id="resumen">
+        <p class="eyebrow">PRD educativo</p>
+        <h1>CRUD de Clientes con Vue.js, Vite y Nuxt UI</h1>
+        <p class="lead">
+          Documento de requisitos y guia didactica para explicar a estudiantes como funciona un CRUD frontend de clientes: creacion, lectura, actualizacion, eliminacion, busqueda, filtrado, seleccion multiple, paginacion y persistencia local.
+        </p>
+
+        <div class="meta-grid">
+          <div class="meta">
+            <strong>Producto</strong>
+            Dashboard de clientes
+          </div>
+          <div class="meta">
+            <strong>Tipo</strong>
+            Frontend solamente
+          </div>
+          <div class="meta">
+            <strong>Archivo principal</strong>
+            <code>src/pages/customers.vue</code>
+          </div>
+          <div class="meta">
+            <strong>Version PRD</strong>
+            1.0
+          </div>
+        </div>
+
+        <div class="tag-list">
+          <span class="tag">Vue 3</span>
+          <span class="tag">Composition API</span>
+          <span class="tag">Nuxt UI para Vue</span>
+          <span class="tag">TypeScript</span>
+          <span class="tag">Zod</span>
+          <span class="tag">localStorage</span>
+        </div>
+      </header>
+
+      <section id="contexto">
+        <h2>1. Contexto del producto</h2>
+        <p>
+          La aplicacion es un dashboard construido con una plantilla oficial de Nuxt UI para Vue. Dentro de esa plantilla se implemento una pantalla llamada <strong>Clientes</strong>, cuyo objetivo es permitir gestionar una lista de clientes sin usar backend ni base de datos externa.
+        </p>
+        <p>
+          El CRUD es ideal para clase porque concentra conceptos esenciales de desarrollo frontend moderno: estado reactivo, formularios, validacion, tablas, componentes reutilizables, eventos, renderizado condicional, persistencia local y experiencia de usuario.
+        </p>
+        <div class="note">
+          <strong>Idea central para estudiantes:</strong> aunque no exista una API real, el frontend puede simular el ciclo completo de gestion de datos usando estado local y <code>localStorage</code>. Esto permite practicar la logica del CRUD antes de conectarlo a un backend.
+        </div>
+      </section>
+
+      <section id="objetivos">
+        <h2>2. Objetivos</h2>
+        <div class="two-col">
+          <div class="card">
+            <h3>Objetivos del producto</h3>
+            <ul>
+              <li>Mostrar una lista de clientes en una tabla clara y navegable.</li>
+              <li>Permitir crear nuevos clientes desde un formulario modal.</li>
+              <li>Permitir editar la informacion de un cliente existente.</li>
+              <li>Permitir eliminar un cliente individual o varios clientes seleccionados.</li>
+              <li>Conservar los datos en el navegador mediante <code>localStorage</code>.</li>
+              <li>Ofrecer busqueda, filtro por estado, paginacion y control de columnas.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Objetivos de aprendizaje</h3>
+            <ul>
+              <li>Comprender la diferencia entre estado reactivo y datos persistidos.</li>
+              <li>Aplicar <code>ref</code>, <code>reactive</code>, <code>computed</code> y <code>watch</code>.</li>
+              <li>Crear formularios validados con <code>Zod</code> y <code>UForm</code>.</li>
+              <li>Entender como una tabla recibe datos y columnas declarativas.</li>
+              <li>Practicar operaciones de arrays: <code>filter</code>, <code>map</code>, <code>some</code> y <code>find</code>.</li>
+              <li>Traducir requerimientos de producto a criterios de aceptacion verificables.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="alcance">
+        <h2>3. Alcance</h2>
+        <h3>Incluido</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Modulo</th>
+              <th>Descripcion</th>
+              <th>Valor educativo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Listado</td>
+              <td>Tabla con columnas de ID, cliente, telefono, ciudad, estado, fecha de registro y acciones.</td>
+              <td>Explica componentes de datos y renderizado de filas.</td>
+            </tr>
+            <tr>
+              <td>Crear</td>
+              <td>Modal con formulario para ingresar datos de un nuevo cliente.</td>
+              <td>Permite practicar formularios, validacion y eventos.</td>
+            </tr>
+            <tr>
+              <td>Editar</td>
+              <td>Reutiliza el mismo modal, pero carga los datos del cliente seleccionado.</td>
+              <td>Ense&ntilde;a reutilizacion de UI y control de modo crear/editar.</td>
+            </tr>
+            <tr>
+              <td>Eliminar</td>
+              <td>Modal de confirmacion para eliminacion individual o multiple.</td>
+              <td>Explica confirmacion de acciones destructivas.</td>
+            </tr>
+            <tr>
+              <td>Persistencia</td>
+              <td>Los clientes se guardan con <code>useStorage</code> en <code>localStorage</code>.</td>
+              <td>Introduce persistencia local sin backend.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>No incluido</h3>
+        <ul>
+          <li>Autenticacion de usuarios.</li>
+          <li>Conexion a API REST, GraphQL o base de datos real.</li>
+          <li>Roles y permisos.</li>
+          <li>Exportacion a Excel o PDF.</li>
+          <li>Pruebas automatizadas end-to-end.</li>
+        </ul>
+      </section>
+
+      <section id="usuarios">
+        <h2>4. Usuarios y casos de uso</h2>
+        <div class="three-col">
+          <div class="card">
+            <h3>Administrador</h3>
+            <p>Necesita registrar, actualizar y limpiar informacion de clientes para mantener una lista ordenada.</p>
+          </div>
+          <div class="card">
+            <h3>Asistente comercial</h3>
+            <p>Consulta clientes, busca por nombre o correo y copia rapidamente el email desde el menu de acciones.</p>
+          </div>
+          <div class="card">
+            <h3>Estudiante</h3>
+            <p>Analiza el codigo para entender como se implementa un CRUD completo usando solo frontend.</p>
+          </div>
+        </div>
+
+        <h3>Historias de usuario</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Historia</th>
+              <th>Prioridad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>HU-01</td>
+              <td>Como administrador, quiero crear un cliente para incorporarlo a la lista.</td>
+              <td><span class="badge must">Must</span></td>
+            </tr>
+            <tr>
+              <td>HU-02</td>
+              <td>Como administrador, quiero editar un cliente para corregir informacion incorrecta.</td>
+              <td><span class="badge must">Must</span></td>
+            </tr>
+            <tr>
+              <td>HU-03</td>
+              <td>Como administrador, quiero eliminar clientes para depurar registros que ya no necesito.</td>
+              <td><span class="badge must">Must</span></td>
+            </tr>
+            <tr>
+              <td>HU-04</td>
+              <td>Como usuario, quiero buscar y filtrar clientes para encontrar informacion rapidamente.</td>
+              <td><span class="badge should">Should</span></td>
+            </tr>
+            <tr>
+              <td>HU-05</td>
+              <td>Como estudiante, quiero ver validaciones claras para aprender buenas practicas de formularios.</td>
+              <td><span class="badge should">Should</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="modelo">
+        <h2>5. Modelo de datos</h2>
+        <p>
+          El modelo representa la informacion minima necesaria para administrar clientes en una interfaz comercial. Esta definido en TypeScript con una interfaz llamada <code>Cliente</code> y un tipo union llamado <code>ClienteEstado</code>.
+        </p>
+
+        <pre><code>type ClienteEstado = 'activo' | 'inactivo' | 'pendiente'
+
+interface Cliente {
+  id: number
+  nombre: string
+  email: string
+  telefono: string
+  ciudad: string
+  estado: ClienteEstado
+  fechaRegistro: string
+}</code></pre>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Campo</th>
+              <th>Tipo</th>
+              <th>Uso en la interfaz</th>
+              <th>Regla</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>number</td>
+              <td>Identificador visible en la tabla.</td>
+              <td>Se genera automaticamente al crear.</td>
+            </tr>
+            <tr>
+              <td><code>nombre</code></td>
+              <td>string</td>
+              <td>Nombre principal del cliente.</td>
+              <td>Minimo 2 caracteres.</td>
+            </tr>
+            <tr>
+              <td><code>email</code></td>
+              <td>string</td>
+              <td>Se muestra debajo del nombre y se puede copiar.</td>
+              <td>Formato email y no duplicado.</td>
+            </tr>
+            <tr>
+              <td><code>telefono</code></td>
+              <td>string</td>
+              <td>Contacto telefonico.</td>
+              <td>Minimo 7 caracteres.</td>
+            </tr>
+            <tr>
+              <td><code>ciudad</code></td>
+              <td>string</td>
+              <td>Ubicacion del cliente.</td>
+              <td>Minimo 2 caracteres.</td>
+            </tr>
+            <tr>
+              <td><code>estado</code></td>
+              <td>activo | inactivo | pendiente</td>
+              <td>Badge visual y filtro.</td>
+              <td>Debe pertenecer a la lista permitida.</td>
+            </tr>
+            <tr>
+              <td><code>fechaRegistro</code></td>
+              <td>string</td>
+              <td>Fecha formateada en la tabla.</td>
+              <td>Se asigna automaticamente al crear.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="funcionalidades">
+        <h2>6. Funcionalidades principales</h2>
+        <div class="cards two-col">
+          <div class="card">
+            <h3>Resumen superior</h3>
+            <p>Muestra cuatro indicadores calculados con <code>computed</code>: total, activos, pendientes e inactivos. Cada tarjeta reacciona automaticamente cuando cambia la lista.</p>
+          </div>
+          <div class="card">
+            <h3>Busqueda</h3>
+            <p>Permite buscar por nombre, correo, telefono o ciudad. La busqueda no modifica la data original; solo genera una version filtrada.</p>
+          </div>
+          <div class="card">
+            <h3>Filtro por estado</h3>
+            <p>El usuario puede ver todos los clientes o limitar la lista a activos, inactivos o pendientes.</p>
+          </div>
+          <div class="card">
+            <h3>Tabla paginada</h3>
+            <p>La tabla usa <code>UTable</code> y <code>getPaginationRowModel</code> para paginar de 8 en 8 registros.</p>
+          </div>
+          <div class="card">
+            <h3>Seleccion multiple</h3>
+            <p>Cada fila tiene un checkbox. Al seleccionar clientes aparece el boton de eliminar seleccionados.</p>
+          </div>
+          <div class="card">
+            <h3>Menu de acciones</h3>
+            <p>Cada fila contiene opciones para editar, copiar correo o eliminar.</p>
+          </div>
+        </div>
+
+        <h3>Logica de filtrado</h3>
+        <p>
+          La lista que se renderiza en la tabla no es directamente <code>clientes</code>, sino <code>clientesFiltrados</code>. Esto mantiene separada la fuente de datos original de la representacion filtrada.
+        </p>
+        <pre><code>const clientesFiltrados = computed(() =&gt; {
+  const term = search.value.trim().toLowerCase()
+
+  return clientes.value.filter((cliente) =&gt; {
+    const matchesSearch = !term || [
+      cliente.nombre,
+      cliente.email,
+      cliente.telefono,
+      cliente.ciudad
+    ].some(value =&gt; value.toLowerCase().includes(term))
+
+    const matchesEstado = estadoFiltro.value === 'todos'
+      || cliente.estado === estadoFiltro.value
+
+    return matchesSearch &amp;&amp; matchesEstado
+  })
+})</code></pre>
+      </section>
+
+      <section id="arquitectura">
+        <h2>7. Arquitectura frontend</h2>
+        <p>
+          El CRUD vive principalmente en un solo componente de pagina: <code>src/pages/customers.vue</code>. Para fines pedagogicos, esto permite que los estudiantes vean todo el flujo en un mismo archivo: tipos, estado, validaciones, funciones y plantilla.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Capa</th>
+              <th>Elemento</th>
+              <th>Responsabilidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Datos</td>
+              <td><code>clientes</code></td>
+              <td>Lista persistida de clientes mediante <code>useStorage</code>.</td>
+            </tr>
+            <tr>
+              <td>Estado UI</td>
+              <td><code>formOpen</code>, <code>deleteOpen</code>, <code>rowSelection</code></td>
+              <td>Controla modales, seleccion de filas y comportamiento visible.</td>
+            </tr>
+            <tr>
+              <td>Formulario</td>
+              <td><code>state</code>, <code>schema</code>, <code>onSubmit</code></td>
+              <td>Administra entradas del usuario y validacion.</td>
+            </tr>
+            <tr>
+              <td>Derivados</td>
+              <td><code>clientesFiltrados</code>, <code>resumen</code>, <code>modalTitle</code></td>
+              <td>Calcula informacion a partir del estado base.</td>
+            </tr>
+            <tr>
+              <td>Presentacion</td>
+              <td><code>UDashboardPanel</code>, <code>UTable</code>, <code>UModal</code></td>
+              <td>Renderiza la interfaz usando componentes de Nuxt UI.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Persistencia local</h3>
+        <pre><code>const clientes = useStorage&lt;Cliente[]&gt;('clientes-crud-v1', clientesIniciales)</code></pre>
+        <p>
+          <code>useStorage</code> conecta una variable reactiva con el almacenamiento del navegador. Cuando <code>clientes.value</code> cambia, tambien cambia el contenido guardado en <code>localStorage</code>. Si se recarga la pagina, la lista se restaura desde el navegador.
+        </p>
+        <div class="warning">
+          <strong>Limitacion importante:</strong> esta persistencia es local por navegador. Si otro usuario abre la aplicacion en otra computadora, no vera los mismos datos. Para compartir informacion entre usuarios se necesita backend.
+        </div>
+      </section>
+
+      <section id="flujos">
+        <h2>8. Flujos del CRUD</h2>
+
+        <h3>Crear cliente</h3>
+        <div class="flow">
+          <div class="flow-step">El usuario presiona el boton <strong>Nuevo cliente</strong>.</div>
+          <div class="flow-step">La funcion <code>openCreateModal()</code> limpia el formulario, asigna <code>editingId = null</code> y abre el modal.</div>
+          <div class="flow-step">El usuario completa nombre, correo, telefono, ciudad y estado.</div>
+          <div class="flow-step">Al enviar, <code>UForm</code> valida con <code>Zod</code>.</div>
+          <div class="flow-step">Si el email no esta duplicado, se calcula un nuevo ID y se agrega el cliente al inicio del array.</div>
+          <div class="flow-step">El modal se cierra, se limpia el formulario y aparece una notificacion de exito.</div>
+        </div>
+
+        <pre><code>const nextId = Math.max(1000, ...clientes.value.map(item =&gt; item.id)) + 1
+
+clientes.value = [{
+  id: nextId,
+  ...cliente,
+  fechaRegistro: new Date().toISOString().slice(0, 10)
+}, ...clientes.value]</code></pre>
+
+        <h3>Leer clientes</h3>
+        <div class="flow">
+          <div class="flow-step">La tabla recibe <code>:data="clientesFiltrados"</code>.</div>
+          <div class="flow-step">Las columnas se definen en el arreglo <code>columns</code>.</div>
+          <div class="flow-step">El usuario puede ordenar por cliente, paginar, ocultar columnas y seleccionar filas.</div>
+          <div class="flow-step">Si no hay resultados, se muestra una alerta con el mensaje <strong>No se encontraron clientes</strong>.</div>
+        </div>
+
+        <h3>Actualizar cliente</h3>
+        <div class="flow">
+          <div class="flow-step">El usuario abre el menu de acciones de una fila y elige <strong>Editar</strong>.</div>
+          <div class="flow-step"><code>openEditModal(cliente)</code> guarda el ID en <code>editingId</code> y copia los datos al formulario.</div>
+          <div class="flow-step">El modal cambia su titulo a <strong>Editar cliente</strong> gracias a <code>modalTitle</code>.</div>
+          <div class="flow-step">Al enviar, <code>onSubmit</code> detecta que existe <code>editingId</code> y ejecuta un <code>map</code>.</div>
+          <div class="flow-step">Solo el cliente cuyo ID coincide se reemplaza con los datos nuevos.</div>
+        </div>
+
+        <pre><code>clientes.value = clientes.value.map(item =&gt; item.id === editingId.value
+  ? { ...item, ...cliente }
+  : item)</code></pre>
+
+        <h3>Eliminar cliente</h3>
+        <div class="flow">
+          <div class="flow-step">Para eliminar uno, el usuario selecciona <strong>Eliminar</strong> desde el menu de acciones.</div>
+          <div class="flow-step">Para eliminar varios, el usuario marca checkboxes y presiona <strong>Eliminar</strong>.</div>
+          <div class="flow-step">El sistema guarda los IDs a eliminar en <code>deleteIds</code>.</div>
+          <div class="flow-step">Se abre un modal de confirmacion para evitar eliminaciones accidentales.</div>
+          <div class="flow-step">Al confirmar, se usa <code>filter</code> para dejar solo los clientes cuyo ID no esta en el conjunto de eliminacion.</div>
+        </div>
+
+        <pre><code>const ids = new Set(deleteIds.value)
+clientes.value = clientes.value.filter(cliente =&gt; !ids.has(cliente.id))</code></pre>
+      </section>
+
+      <section id="validaciones">
+        <h2>9. Validaciones y reglas de negocio</h2>
+        <p>
+          La validacion tiene dos niveles: validacion de forma con <code>Zod</code> y validacion de negocio para evitar emails duplicados.
+        </p>
+
+        <pre><code>const schema = z.object({
+  nombre: z.string().min(2, 'Ingresa al menos 2 caracteres'),
+  email: z.string().email('Ingresa un correo valido'),
+  telefono: z.string().min(7, 'Ingresa un telefono valido'),
+  ciudad: z.string().min(2, 'Ingresa la ciudad'),
+  estado: z.enum(['activo', 'inactivo', 'pendiente'])
+})</code></pre>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Regla</th>
+              <th>Motivo</th>
+              <th>Respuesta del sistema</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nombre minimo de 2 caracteres</td>
+              <td>Evita registros vacios o poco descriptivos.</td>
+              <td>Muestra error en el formulario.</td>
+            </tr>
+            <tr>
+              <td>Email con formato valido</td>
+              <td>Permite usar el correo como contacto confiable.</td>
+              <td>Muestra error en el formulario.</td>
+            </tr>
+            <tr>
+              <td>Email unico</td>
+              <td>Evita duplicar el mismo cliente.</td>
+              <td>Muestra toast: <strong>Correo duplicado</strong>.</td>
+            </tr>
+            <tr>
+              <td>Telefono minimo de 7 caracteres</td>
+              <td>Evita telefonos demasiado cortos.</td>
+              <td>Muestra error en el formulario.</td>
+            </tr>
+            <tr>
+              <td>Estado dentro de lista permitida</td>
+              <td>Garantiza consistencia visual y de filtros.</td>
+              <td>Solo se puede elegir activo, inactivo o pendiente.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="ui">
+        <h2>10. Interfaz de usuario</h2>
+        <p>
+          La UI usa componentes de Nuxt UI para mantener consistencia visual y reducir codigo repetitivo. Cada componente tiene una responsabilidad clara.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Uso</th>
+              <th>Concepto que ense&ntilde;a</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>UDashboardPanel</code></td>
+              <td>Contenedor principal de la pagina de clientes.</td>
+              <td>Layout de dashboard.</td>
+            </tr>
+            <tr>
+              <td><code>UDashboardNavbar</code></td>
+              <td>Cabecera con titulo y boton de nuevo cliente.</td>
+              <td>Slots y acciones principales.</td>
+            </tr>
+            <tr>
+              <td><code>UPageCard</code></td>
+              <td>Tarjetas de resumen.</td>
+              <td>Datos derivados y UI reactiva.</td>
+            </tr>
+            <tr>
+              <td><code>UInput</code></td>
+              <td>Busqueda y campos de texto.</td>
+              <td><code>v-model</code> en inputs.</td>
+            </tr>
+            <tr>
+              <td><code>USelect</code></td>
+              <td>Filtro por estado y selector de estado del formulario.</td>
+              <td>Listas controladas.</td>
+            </tr>
+            <tr>
+              <td><code>UTable</code></td>
+              <td>Renderiza clientes y columnas.</td>
+              <td>Tablas declarativas.</td>
+            </tr>
+            <tr>
+              <td><code>UModal</code></td>
+              <td>Formulario y confirmacion de eliminacion.</td>
+              <td>Estado booleano para abrir/cerrar UI.</td>
+            </tr>
+            <tr>
+              <td><code>UForm</code></td>
+              <td>Formulario validado con Zod.</td>
+              <td>Submit tipado y validacion.</td>
+            </tr>
+            <tr>
+              <td><code>UToast</code></td>
+              <td>Notificaciones de exito o error.</td>
+              <td>Feedback inmediato al usuario.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="requerimientos">
+        <h2>11. Requerimientos funcionales y no funcionales</h2>
+
+        <h3>Requerimientos funcionales</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Requerimiento</th>
+              <th>Prioridad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>RF-01</td>
+              <td>El sistema debe listar clientes registrados en una tabla.</td>
+              <td><span class="badge must">Must</span></td>
+            </tr>
+            <tr>
+              <td>RF-02</td>
+              <td>El sistema debe permitir crear clientes con datos validados.</td>
+              <td><span class="badge must">Must</span></td>
+            </tr>
+            <tr>
+              <td>RF-03</td>
+              <td>El sistema debe permitir editar clientes existentes.</td>
+              <td><span class="badge must">Must</span></td>
+            </tr>
+            <tr>
+              <td>RF-04</td>
+              <td>El sistema debe permitir eliminar uno o varios clientes.</td>
+              <td><span class="badge must">Must</span></td>
+            </tr>
+            <tr>
+              <td>RF-05</td>
+              <td>El sistema debe impedir emails duplicados.</td>
+              <td><span class="badge should">Should</span></td>
+            </tr>
+            <tr>
+              <td>RF-06</td>
+              <td>El sistema debe permitir busqueda y filtro por estado.</td>
+              <td><span class="badge should">Should</span></td>
+            </tr>
+            <tr>
+              <td>RF-07</td>
+              <td>El sistema debe persistir cambios en el navegador.</td>
+              <td><span class="badge should">Should</span></td>
+            </tr>
+            <tr>
+              <td>RF-08</td>
+              <td>El sistema podria permitir copiar el correo desde una fila.</td>
+              <td><span class="badge could">Could</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Requerimientos no funcionales</h3>
+        <ul>
+          <li><strong>Usabilidad:</strong> la pantalla debe ser clara para usuarios principiantes.</li>
+          <li><strong>Responsive:</strong> los controles deben funcionar en escritorio y pantallas pequenas.</li>
+          <li><strong>Mantenibilidad:</strong> la logica debe estar organizada en funciones con nombres descriptivos.</li>
+          <li><strong>Performance:</strong> el filtrado debe ser suficiente para listas pequenas o medianas en memoria.</li>
+          <li><strong>Accesibilidad basica:</strong> los botones, inputs y modales deben usar componentes accesibles de Nuxt UI.</li>
+        </ul>
+      </section>
+
+      <section id="aceptacion">
+        <h2>12. Criterios de aceptacion</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Escenario</th>
+              <th>Dado</th>
+              <th>Cuando</th>
+              <th>Entonces</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Crear cliente valido</td>
+              <td>El usuario abre el modal de nuevo cliente.</td>
+              <td>Completa todos los campos correctamente y envia.</td>
+              <td>El cliente aparece en la tabla y se muestra un toast de exito.</td>
+            </tr>
+            <tr>
+              <td>Crear cliente invalido</td>
+              <td>El formulario esta abierto.</td>
+              <td>El usuario deja campos incompletos o email invalido.</td>
+              <td>El formulario muestra errores y no crea el registro.</td>
+            </tr>
+            <tr>
+              <td>Email duplicado</td>
+              <td>Ya existe un cliente con un correo.</td>
+              <td>Se intenta crear o editar otro cliente con el mismo correo.</td>
+              <td>El sistema muestra <strong>Correo duplicado</strong> y cancela el guardado.</td>
+            </tr>
+            <tr>
+              <td>Editar cliente</td>
+              <td>Existe un cliente en la tabla.</td>
+              <td>El usuario elige editar, modifica datos y guarda.</td>
+              <td>La fila se actualiza sin duplicar el registro.</td>
+            </tr>
+            <tr>
+              <td>Eliminar cliente</td>
+              <td>Existe un cliente en la tabla.</td>
+              <td>El usuario confirma su eliminacion.</td>
+              <td>El cliente desaparece de la tabla y de <code>localStorage</code>.</td>
+            </tr>
+            <tr>
+              <td>Filtrar por estado</td>
+              <td>Hay clientes con distintos estados.</td>
+              <td>El usuario selecciona un estado en el filtro.</td>
+              <td>La tabla muestra solo clientes del estado elegido.</td>
+            </tr>
+            <tr>
+              <td>Persistencia</td>
+              <td>El usuario crea, edita o elimina clientes.</td>
+              <td>Recarga el navegador.</td>
+              <td>Los cambios se mantienen porque fueron guardados localmente.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="clase">
+        <h2>13. Material sugerido para clase</h2>
+
+        <h3>Secuencia de explicacion</h3>
+        <ol>
+          <li>Mostrar la interfaz final y preguntar que operaciones CRUD detectan los estudiantes.</li>
+          <li>Explicar el modelo <code>Cliente</code> y por que TypeScript ayuda a evitar errores.</li>
+          <li>Revisar el estado base: <code>clientes</code>, <code>search</code>, <code>estadoFiltro</code>, <code>pagination</code>.</li>
+          <li>Explicar <code>computed</code> con el ejemplo de <code>clientesFiltrados</code> y <code>resumen</code>.</li>
+          <li>Analizar el formulario y sus validaciones con Zod.</li>
+          <li>Recorrer cada flujo: crear, leer, actualizar y eliminar.</li>
+          <li>Mostrar como <code>localStorage</code> conserva cambios al recargar.</li>
+          <li>Proponer mejoras para practicar.</li>
+        </ol>
+
+        <h3>Preguntas para estudiantes</h3>
+        <ul>
+          <li>Por que <code>clientesFiltrados</code> debe ser un <code>computed</code> y no una variable normal?</li>
+          <li>Que pasaria si editaramos directamente el arreglo original sin usar <code>map</code>?</li>
+          <li>Por que conviene confirmar antes de eliminar?</li>
+          <li>Que diferencia hay entre validacion de formulario y regla de negocio?</li>
+          <li>Que limitaciones tiene <code>localStorage</code> frente a una base de datos real?</li>
+        </ul>
+
+        <h3>Ejercicios practicos</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Nivel</th>
+              <th>Ejercicio</th>
+              <th>Concepto reforzado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Basico</td>
+              <td>Agregar un campo <code>documento</code> al cliente y mostrarlo en la tabla.</td>
+              <td>Modelo de datos, formulario y columnas.</td>
+            </tr>
+            <tr>
+              <td>Basico</td>
+              <td>Cambiar los mensajes de validacion para que sean mas descriptivos.</td>
+              <td>Zod y experiencia de usuario.</td>
+            </tr>
+            <tr>
+              <td>Intermedio</td>
+              <td>Agregar un boton para limpiar busqueda y filtros.</td>
+              <td>Control de estado con <code>ref</code>.</td>
+            </tr>
+            <tr>
+              <td>Intermedio</td>
+              <td>Agregar ordenamiento por fecha de registro.</td>
+              <td>Columnas y comportamiento de tabla.</td>
+            </tr>
+            <tr>
+              <td>Avanzado</td>
+              <td>Extraer la logica del CRUD a un composable <code>useClientes</code>.</td>
+              <td>Separacion de responsabilidades.</td>
+            </tr>
+            <tr>
+              <td>Avanzado</td>
+              <td>Reemplazar <code>localStorage</code> por llamadas a una API simulada.</td>
+              <td>Transicion de frontend local a arquitectura cliente-servidor.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="success">
+          <strong>Actividad de cierre:</strong> pedir a cada estudiante que explique verbalmente que funcion se ejecuta al crear, editar y eliminar. Si pueden describir el recorrido del dato desde el formulario hasta la tabla, entendieron el flujo CRUD.
+        </div>
+      </section>
+
+      <section id="evaluacion">
+        <h2>14. Rubrica de evaluacion</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Criterio</th>
+              <th>Logro esperado</th>
+              <th>Puntaje sugerido</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Modelo de datos</td>
+              <td>Define correctamente campos, tipos y estados permitidos.</td>
+              <td>20%</td>
+            </tr>
+            <tr>
+              <td>Crear y editar</td>
+              <td>Usa formulario validado, maneja modo crear/editar y actualiza la tabla.</td>
+              <td>25%</td>
+            </tr>
+            <tr>
+              <td>Eliminar</td>
+              <td>Implementa confirmacion y elimina uno o varios registros sin errores.</td>
+              <td>15%</td>
+            </tr>
+            <tr>
+              <td>Busqueda y filtros</td>
+              <td>Filtra sin modificar la fuente original de datos.</td>
+              <td>15%</td>
+            </tr>
+            <tr>
+              <td>Persistencia</td>
+              <td>Conserva datos al recargar usando almacenamiento local o mecanismo equivalente.</td>
+              <td>10%</td>
+            </tr>
+            <tr>
+              <td>Calidad de codigo</td>
+              <td>Nombres claros, funciones pequenas y UI coherente.</td>
+              <td>15%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Comandos utiles del proyecto</h3>
+        <pre><code>pnpm install
+pnpm dev
+pnpm typecheck
+pnpm lint
+pnpm build</code></pre>
+
+        <h3>Resumen final</h3>
+        <p>
+          Este CRUD demuestra que una aplicacion frontend puede cubrir una gran parte del ciclo de gestion de datos: capturar informacion, validarla, mostrarla, actualizarla, eliminarla y persistirla localmente. La siguiente evolucion natural es conectar estas mismas operaciones a una API real, donde <code>clientes.value</code> dejaria de ser la fuente definitiva y pasaria a sincronizarse con un servidor.
+        </p>
+      </section>
+
+      <p class="footer">Documento generado como material de apoyo para estudiantes de desarrollo web frontend.</p>
+    </div>
+  </main>
+</body>
+</html>
