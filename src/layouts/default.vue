@@ -1,24 +1,35 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { NavigationMenuItem } from '@nuxt/ui'
+import { ref } from "vue";
+import type { NavigationMenuItem } from "@nuxt/ui";
 
-const open = ref(false)
+const open = ref(false);
 
-const links = [{
-  label: 'Inicio',
-  icon: 'i-lucide-house',
-  to: '/',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Clientes',
-  icon: 'i-lucide-users',
-  to: '/customers',
-  onSelect: () => {
-    open.value = false
-  }
-}] satisfies NavigationMenuItem[]
+const links = [
+  {
+    label: "Inicio",
+    icon: "i-lucide-house",
+    to: "/",
+    onSelect: () => {
+      open.value = false;
+    },
+  },
+  {
+    label: "Clientes",
+    icon: "i-lucide-users",
+    to: "/customers",
+    onSelect: () => {
+      open.value = false;
+    },
+  },
+  {
+    label: "Productos",
+    icon: "i-lucide-package",
+    to: "/products",
+    onSelect: () => {
+      open.value = false;
+    },
+  },
+] satisfies NavigationMenuItem[];
 </script>
 
 <template>
