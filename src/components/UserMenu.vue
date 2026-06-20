@@ -10,10 +10,10 @@ defineProps<{
 const colorMode = useColorMode();
 
 const user = ref({
-  name: "Antonio",
+  name: "Amaranto Zambrano",
   email: "docente@example.com",
   avatar: {
-    alt: "Antonio",
+    alt: "Amaranto Zambrano",
   },
 });
 

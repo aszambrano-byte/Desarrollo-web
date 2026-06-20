@@ -1,109 +1,285 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import type { Product } from "@/types";
+import { ref, computed, onMounted, watch } from "vue";
+import type { Producto } from "@/types";
 
-const productos = ref<Product[]>([]);
-const carrito = ref<Product[]>([]);
+const productos = ref<Producto[]>([]);
+const producto = ref<Producto>({
+  id: 0,
+  nombre: "",
+  descripcion: "",
+  precio: 0,
+  stock: 0,
+  categoria: "",
+  imagen: "",
+  marca: "",
+  estado: "disponible",
+});
+
+const carrito = ref<Producto[]>([]);
 const mostrarCarrito = ref(false);
+const busqueda = ref("");
+const editando = ref(false);
 
-const getProducts = async (): Promise<Product[]> => {
+// 🔹 Cargar productos desde API
+const getProducts = async () => {
   try {
     const response = await fetch("https://fakestoreapi.com/products");
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+    const data = await response.json();
+    productos.value = data.map((p: any) => ({
+      id: p.id,
+      nombre: p.title,
+      descripcion: p.description,
+      precio: p.price,
+      stock: 10,
+      categoria: p.category,
+      imagen: p.image,
+      marca: "",
+      estado: "disponible",
+    }));
   } catch (error) {
-    console.error("Error fetching products:", error);
-    return [];
+    console.error("Error cargando productos:", error);
   }
 };
+onMounted(getProducts);
 
-productos.value = await getProducts();
+// 🔹 Persistencia manual
+onMounted(() => {
+  const guardados = localStorage.getItem("productosExtra");
+  if (guardados) productos.value.push(...JSON.parse(guardados));
+});
+watch(
+  productos,
+  (nuevo) => {
+    localStorage.setItem("productosExtra", JSON.stringify(nuevo));
+  },
+  { deep: true },
+);
 
-function agregarAlCarrito(producto: Product) {
-  carrito.value.push(producto);
+// 🔹 CRUD con validación
+function guardarProducto() {
+  if (
+    !producto.value.nombre ||
+    producto.value.precio <= 0 ||
+    producto.value.stock <= 0
+  ) {
+    alert("Completa los campos correctamente.");
+    return;
+  }
+  if (editando.value) {
+    const index = productos.value.findIndex((p) => p.id === producto.value.id);
+    productos.value[index] = { ...producto.value };
+    editando.value = false;
+  } else {
+    producto.value.id = Date.now();
+    productos.value.push({ ...producto.value });
+  }
+  limpiarFormulario();
+}
+function limpiarFormulario() {
+  producto.value = {
+    id: 0,
+    nombre: "",
+    descripcion: "",
+    precio: 0,
+    stock: 0,
+    categoria: "",
+    imagen: "",
+    marca: "",
+    estado: "disponible",
+  };
+}
+function editarProducto(p: Producto) {
+  producto.value = { ...p };
+  editando.value = true;
+}
+function eliminarProducto(id: number) {
+  productos.value = productos.value.filter((p) => p.id !== id);
+}
+
+// 🔹 Carrito
+function agregarAlCarrito(p: Producto) {
+  const existe = carrito.value.find((item) => item.id === p.id);
+  if (!existe) carrito.value.push(p);
   mostrarCarrito.value = true;
 }
+function eliminarDelCarrito(id: number) {
+  carrito.value = carrito.value.filter((p) => p.id !== id);
+}
+function vaciarCarrito() {
+  carrito.value = [];
+}
+const total = computed(() =>
+  carrito.value.reduce((acc, p) => acc + p.precio, 0),
+);
+
+// 🔹 Filtro
+const productosFiltrados = computed(() =>
+  productos.value.filter((p) =>
+    [p.nombre, p.categoria, p.descripcion]
+      .join(" ")
+      .toLowerCase()
+      .includes(busqueda.value.toLowerCase()),
+  ),
+);
 </script>
 
 <template>
-  <UDashboardPanel id="productos">
-    <template #header>
-      <UDashboardNavbar title="Productos" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-        <template #right>
-          <UButton
-            variant="outline"
-            color="primary"
-            size="sm"
-            @click="mostrarCarrito = !mostrarCarrito"
-          >
-            Ver Carrito
-          </UButton>
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <div class="p-6 space-y-6 min-h-screen overflow-y-auto">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold">Registrar Producto</h2>
+      <UButton
+        variant="solid"
+        color="primary"
+        size="sm"
+        @click="mostrarCarrito = !mostrarCarrito"
+      >
+        🛒 Ver Carrito ({{ carrito.length }})
+      </UButton>
+    </div>
 
-    <template #body>
-      <div class="grid grid-cols-3 gap-6">
-        <UCard
-          v-for="producto in productos"
-          :key="producto.id"
-          class="hover:shadow-lg transition"
-        >
-          <img
-            :src="producto.image"
-            :alt="producto.title"
-            class="h-40 mx-auto object-contain"
+    <!-- Formulario -->
+    <UCard class="shadow-md">
+      <UCardBody>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <UInput v-model="producto.nombre" placeholder="Nombre del producto" />
+          <UInput
+            v-model.number="producto.precio"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="Precio (USD)"
           />
-          <UCardHeader>
-            <UCardTitle>{{ producto.title }}</UCardTitle>
-            <UCardSubtitle>{{ producto.category }}</UCardSubtitle>
-          </UCardHeader>
-          <UCardBody>
-            <p class="text-sm text-gray-600">{{ producto.description }}</p>
-            <p class="text-lg font-bold text-green-600 mt-2">
-              ${{ producto.price }}
-            </p>
-          </UCardBody>
-          <UCardFooter>
-            <UButton
-              icon="i-heroicons-plus"
-              color="primary"
-              variant="soft"
-              @click="agregarAlCarrito(producto)"
-            >
-              Agregar
-            </UButton>
-          </UCardFooter>
-        </UCard>
-      </div>
+          <UInput
+            v-model.number="producto.stock"
+            type="number"
+            min="1"
+            placeholder="Cantidad en stock"
+          />
+          <UInput v-model="producto.categoria" placeholder="Categoría" />
+          <UInput v-model="producto.imagen" placeholder="URL de imagen" />
+          <UInput v-model="producto.marca" placeholder="Marca (opcional)" />
+          <USelect
+            v-model="producto.estado"
+            :options="['disponible', 'agotado', 'inactivo']"
+            placeholder="Estado"
+          />
+        </div>
+        <UTextarea
+          v-model="producto.descripcion"
+          placeholder="Descripción del producto"
+          class="mt-4"
+        />
+      </UCardBody>
+      <UCardFooter class="flex gap-3 justify-end">
+        <UButton color="success" variant="solid" @click="guardarProducto">{{
+          editando ? "Actualizar" : "Guardar"
+        }}</UButton>
+        <UButton color="neutral" variant="solid" @click="limpiarFormulario"
+          >Limpiar</UButton
+        >
+      </UCardFooter>
+    </UCard>
 
-      <!-- Panel lateral del carrito -->
-      <USlideover v-model="mostrarCarrito" title="Carrito de compras">
-        <template #body>
-          <p class="text-sm text-gray-500 mb-4">
-            Aquí puedes revisar los productos que has agregado a tu carrito.
-          </p>
+    <!-- Listado -->
+    <UCard>
+      <UCardHeader>
+        <div class="flex justify-between items-center w-full">
+          <UCardTitle>Listado de Productos</UCardTitle>
+          <UInput v-model="busqueda" placeholder="Buscar..." class="w-1/3" />
+        </div>
+      </UCardHeader>
+      <UCardBody>
+        <div v-if="productosFiltrados.length" class="grid grid-cols-3 gap-4">
+          <UCard v-for="p in productosFiltrados" :key="p.id">
+            <img
+              :src="p.imagen"
+              :alt="p.nombre"
+              class="h-40 mx-auto object-contain"
+            />
+            <UCardHeader>
+              <UCardTitle>{{ p.nombre }}</UCardTitle>
+              <UCardSubtitle>{{ p.categoria }}</UCardSubtitle>
+            </UCardHeader>
+            <UCardBody>
+              <p>{{ p.descripcion }}</p>
+              <p class="text-green-600 font-bold">${{ p.precio }}</p>
+              <p class="text-xs">Stock: {{ p.stock }}</p>
+              <p class="text-xs">Marca: {{ p.marca || "Sin marca" }}</p>
+              <UBadge
+                :color="
+                  p.estado === 'disponible'
+                    ? 'success'
+                    : p.estado === 'agotado'
+                      ? 'warning'
+                      : 'error'
+                "
+                >{{ p.estado }}</UBadge
+              >
+            </UCardBody>
+            <UCardFooter class="flex gap-2 justify-end">
+              <UButton
+                color="primary"
+                variant="solid"
+                @click="editarProducto(p)"
+                >✏️ Editar</UButton
+              >
+              <UButton
+                color="error"
+                variant="solid"
+                @click="eliminarProducto(p.id)"
+                >🗑️ Eliminar</UButton
+              >
+              <UButton
+                color="success"
+                variant="solid"
+                @click="agregarAlCarrito(p)"
+                >➕ Agregar</UButton
+              >
+            </UCardFooter>
+          </UCard>
+        </div>
+        <p v-else class="text-center text-gray-500 mt-4">
+          No hay productos registrados.
+        </p>
+      </UCardBody>
+    </UCard>
+    <!-- Carrito -->
+    <USlideover v-model="mostrarCarrito" title="🛒 Carrito de compras">
+      <template #body>
+        <div v-if="carrito.length">
           <div
             v-for="item in carrito"
             :key="item.id"
-            class="mb-4 border-b pb-3"
+            class="flex justify-between items-center py-2 border-b"
           >
-            <div class="flex gap-3">
-              <img :src="item.image" class="w-16 h-16 object-contain" />
-              <div>
-                <h3 class="font-semibold">{{ item.title }}</h3>
-                <p class="text-sm text-gray-600">{{ item.description }}</p>
-                <p class="text-green-600 font-bold">${{ item.price }}</p>
-              </div>
-            </div>
+            <span>{{ item.nombre }}</span>
+            <span class="font-bold text-green-600">${{ item.precio }}</span>
+            <UButton
+              icon="i-heroicons-trash"
+              color="error"
+              variant="solid"
+              @click="eliminarDelCarrito(item.id)"
+            />
           </div>
-        </template>
-      </USlideover>
-    </template>
-  </UDashboardPanel>
+          <div class="mt-4 flex justify-between font-semibold">
+            <span>Total:</span><span>${{ total.toFixed(2) }}</span>
+          </div>
+          <UButton
+            color="neutral"
+            variant="solid"
+            class="mt-4 w-full"
+            @click="vaciarCarrito"
+          >
+            Vaciar carrito
+          </UButton>
+        </div>
+        <p v-else class="text-center text-gray-500 mt-4">
+          Tu carrito está vacío.
+        </p>
+      </template>
+    </USlideover>
+  </div>
 </template>
 
 <style scoped>
