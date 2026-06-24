@@ -2,11 +2,13 @@ import { ref, computed } from "vue";
 import type { Producto } from "~/types";
 
 const carrito = ref<Producto[]>([]);
+const mostrarCarrito = ref(false);
 
 export function useCarrito() {
   function agregar(producto: Producto): void {
     const existe = carrito.value.find((p) => p.id === producto.id);
     if (!existe) carrito.value.push(producto);
+    mostrarCarrito.value = true; // Abre el carrito automáticamente al agregar
   }
 
   function eliminar(id: number): void {
@@ -21,5 +23,5 @@ export function useCarrito() {
     carrito.value.reduce((acc, p) => acc + p.precio, 0),
   );
 
-  return { carrito, agregar, eliminar, vaciar, total };
+  return { carrito, mostrarCarrito, agregar, eliminar, vaciar, total };
 }

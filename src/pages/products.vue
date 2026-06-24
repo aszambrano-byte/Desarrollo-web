@@ -103,7 +103,7 @@ function agregarAlCarrito(p: Producto) {
   mostrarCarrito.value = true;
 }
 function eliminarDelCarrito(id: number) {
-  carrito.value = carrito.value.filter((p) => p.id !== id);
+  carrito.value = carriage.value.filter((p) => p.id !== id);
 }
 function vaciarCarrito() {
   carrito.value = [];
@@ -125,7 +125,6 @@ const productosFiltrados = computed(() =>
 
 <template>
   <div class="p-6 space-y-6 min-h-screen overflow-y-auto">
-    <!-- Encabezado -->
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-semibold">Registrar Producto</h2>
       <UButton
@@ -138,7 +137,6 @@ const productosFiltrados = computed(() =>
       </UButton>
     </div>
 
-    <!-- Formulario -->
     <UCard class="shadow-md">
       <UCardBody>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -181,7 +179,6 @@ const productosFiltrados = computed(() =>
       </UCardFooter>
     </UCard>
 
-    <!-- Listado -->
     <UCard>
       <UCardHeader>
         <div class="flex justify-between items-center w-full">
@@ -244,27 +241,47 @@ const productosFiltrados = computed(() =>
         </p>
       </UCardBody>
     </UCard>
-    <!-- Carrito -->
-    <USlideover v-model="mostrarCarrito" title="🛒 Carrito de compras">
+
+    <USlideover v-model:open="mostrarCarrito" title="🛒 Carrito de compras">
       <template #body>
-        <div v-if="carrito.length">
+        <div v-if="carrito.length" class="space-y-4">
           <div
             v-for="item in carrito"
             :key="item.id"
-            class="flex justify-between items-center py-2 border-b"
+            class="flex gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-xl shadow-sm bg-white dark:bg-gray-950 relative items-start"
           >
-            <span>{{ item.nombre }}</span>
-            <span class="font-bold text-green-600">${{ item.precio }}</span>
-            <UButton
-              icon="i-heroicons-trash"
-              color="error"
-              variant="solid"
-              @click="eliminarDelCarrito(item.id)"
+            <img
+              :src="item.imagen"
+              :alt="item.nombre"
+              class="w-20 h-20 object-contain bg-white p-1 rounded-lg flex-shrink-0"
             />
+            <div class="flex flex-col flex-1 min-w-0 pr-6">
+              <h4 class="text-sm font-bold text-gray-800 dark:text-white line-clamp-2 leading-tight">
+                {{ item.nombre }}
+              </h4>
+              <p class="text-xs text-gray-400 dark:text-gray-500 line-clamp-3 mt-1 leading-normal">
+                {{ item.descripcion }}
+              </p>
+              <div class="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-2">
+                ${{ item.precio }}
+              </div>
+            </div>
+            <div class="absolute top-2 right-2">
+              <UButton
+                icon="i-heroicons-trash"
+                color="error"
+                variant="ghost"
+                size="xs"
+                @click="eliminarDelCarrito(item.id)"
+              />
+            </div>
           </div>
-          <div class="mt-4 flex justify-between font-semibold">
-            <span>Total:</span><span>${{ total.toFixed(2) }}</span>
+
+          <div class="mt-6 flex justify-between font-semibold border-t pt-4 border-gray-200 dark:border-gray-800">
+            <span>Total:</span>
+            <span class="text-emerald-600">${{ total.toFixed(2) }}</span>
           </div>
+
           <UButton
             color="neutral"
             variant="solid"
@@ -274,7 +291,7 @@ const productosFiltrados = computed(() =>
             Vaciar carrito
           </UButton>
         </div>
-        <p v-else class="text-center text-gray-500 mt-4">
+        <p v-else class="text-center text-gray-500 mt-8">
           Tu carrito está vacío.
         </p>
       </template>

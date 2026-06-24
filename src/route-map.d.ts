@@ -45,6 +45,20 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/inveoices': RouteRecordInfo<
+      '/inveoices',
+      '/inveoices',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/productitem': RouteRecordInfo<
+      '/productitem',
+      '/productitem',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/products': RouteRecordInfo<
       '/products',
       '/products',
@@ -76,6 +90,22 @@ declare module 'vue-router/auto-routes' {
     'src/pages/customers.vue': {
       routes:
         | '/customers'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/inveoices.vue': {
+      routes:
+        | '/inveoices'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/productitem.vue': {
+      routes:
+        | '/productitem'
       views:
         | never
       pathParamNames:
